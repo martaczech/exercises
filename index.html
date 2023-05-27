@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista Zadań</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
+    }
+    form {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      width: 60%;
+      padding: 10px;
+      font-size: 18px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+    }
+    button {
+      padding: 10px;
+      font-size: 18px;
+      background-color: #3a90b8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #468ee0;
+    }
+    
+    ul {
+      list-style-type: decimal;
+      margin: 20;
+      padding: 20;
+    }
+    li {
+      padding: 20px;
+      margin-bottom: 5px;
+      background-color: #be9090;
+      border-radius: 4px;
+    }
+    li:hover {
+      background-color: #be9090;
+    }
+  </style>
+</head>
+<body>
+  <h1>Lista zadań na dziś</h1>
+  <form>
+    <input id="task-input" type="text" placeholder="Wprowadź zadanie">
+    <button id="add-task-button" type="button">Dodaj zadanie</button>
+  </form>
+  <ul id="task-list"></ul>
+  <script>
+    const taskInput = document.getElementById("task-input");
+    const addTaskButton = document.getElementById("add-task-button");
+    const taskList = document.getElementById("task-list");
+   
+  function addTask(event, taskValue) {
+      event.preventDefault();
+    // fetchData from LocalStorage and setting new tasks into it
+    const tasks = getItemFromStorage('tasks');
+    tasks.push(taskValue);
+    setItemFromStorage('tasks', tasks);
+    const newTask = createAndAppendElement(taskValue);
+    // reset input
+    taskInput.focus();
+    taskInput.value = '';
+}
+
+function createAndAppendElement(taskValue) {
+    const newTask = document.createElement('li');
+    const taskText = document.createElement('span');
+    taskText.textContent = taskValue;
+    newTask.appendChild(taskText);
+    const removeButton = document.createElement('button');
+    removeButton.textContent = 'Usuń';
+    removeButton.addEventListener('click', removeTask);
+    newTask.appendChild(removeButton);
+    taskList.appendChild(newTask);
+    return newTask;
+    
+}
+
+function removeTask(event) {
+  const taskItem = event.target.closest('li');
+  if (taskItem) {
+    const taskText = taskItem.firstChild.textContent;
+    
+    // Usuń zadanie z local storage
+    const tasks = getItemFromStorage('tasks');
+    const updatedTasks = tasks.filter(task => task !== taskText);
+    setItemFromStorage('tasks', updatedTasks);
+    
+    // Usuń zadanie z listy w oknie przeglądarki
+    taskList.removeChild(taskItem);
+  }
+}
+
+function getItemFromStorage(key = "") {
+    try {
+        const item = localStorage.getItem(key);
+        if (item) {
+            return JSON.parse(item);
+        }
+        return [];
+    } catch {
+        return [];
+    }
+}
+
+function setItemFromStorage(key, value) {
+    if (!key || !value) {
+        return;
+    }
+
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        console.error(e);
+    }
+}
+addTaskButton.addEventListener("click", () => addTask(event, taskInput.value));
+ document.addEventListener("DOMContentLoaded", function(){
+  const data = getItemFromStorage('tasks');
+  data.forEach(item => createAndAppendElement(item));
+ })
+
+    taskInput.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") { 
+        event.preventDefault();
+        addTaskButton.click();
+      }
+    });
+  
+  </script>
+</body>
+</html>
